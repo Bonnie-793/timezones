@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.37/moment-timezone-with-data-1970-2030.min.js"></script>
+    <title>World Clock App</title>
+    <style>
+      body {
+        background-color: #f9f7fe;
+        font-family: sans-serif;
+      }
+
+      h1 {
+        text-align: center;
+        font-size: 36px;
+      }
+
+      h2 {
+        margin: 0 0 5px;
+        font-size: 28px;
+      }
+
+      select {
+        display: block;
+        width: 100%;
+        font-size: 18px;
+        border-radius: 4px;
+        padding: 10px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 60px auto;
+        background: white;
+        padding: 30px;
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        border-radius: 10px;
+      }
+
+      .city {
+        display: flex;
+        margin: 10px 0;
+        justify-content: space-between;
+        padding: 30px 0;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+      }
+
+      .city:last-child {
+        border: none;
+      }
+
+      .date {
+        opacity: 0.7;
+      }
+
+      .time {
+        font-size: 48px;
+        font-weight: bold;
+      }
+
+      .time small {
+        font-size: 24px;
+        vertical-align: middle;
+        line-height: 48px;
+      }
+
+      footer {
+        text-align: center;
+        font-size: 18px;
+        color: rgba(0, 0, 0, 0.8);
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-top: 10px;
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>World Clock</h1>
+
+      <select id="city">
+        <option value="">Select a city..</option>
+        <option value="current">My current location</option>
+        <option value="Africa/Johannesburg">Johannesburg</option>
+        <option value="Africa/Lagos">Lagos</option>
+        <option value="Pacific/Auckland">Auckland</option>
+      </select>
+
+      <div id="cities">
+        <div class="city" id="mozambique">
+          <div>
+            <h2>Mozambique</h2>
+            <div class="date"></div>
+          </div>
+          <div class="time"></div>
+        </div>
+        <div class="city" id="venice">
+          <div>
+            <h2>Venice</h2>
+            <div class="date"></div>
+          </div>
+          <div class="time"></div>
+        </div>
+      </div>
+      <a href="#" class="back-link" id="backLink" style="display: none;">Back to Homepage</a>
+    </div>
+    <footer>
+      
+    </footer>
+    <script>
+      let updateInterval;
+
+      function updateTime() {
+        const cities = [
+          { id: "mozambique", tz: "Africa/Maputo" },
+          { id: "venice", tz: "Europe/Rome" }
+        ];
+
+        cities.forEach(city => {
+          let cityElement = document.querySelector(`#${city.id}`);
+          if (cityElement) {
+            let cityDateElement = cityElement.querySelector(".date");
+            let cityTimeElement = cityElement.querySelector(".time");
+            let cityTime = moment().tz(city.tz);
+
+            cityDateElement.innerHTML = cityTime.format("MMMM Do YYYY");
+            cityTimeElement.innerHTML = cityTime.format("h:mm:ss [<small>]A[</small>]");
+          }
+        });
+      }
+
+      function updateCity(event) {
+        clearInterval(updateInterval); 
+        let cityTimeZone = event.target.value;
+        if (cityTimeZone === "current") {
+          cityTimeZone = moment.tz.guess();
+        }
+
+        let cityName = cityTimeZone.split("/").pop().replace("_", " ");
+        let citiesElement = document.querySelector("#cities");
+
+        citiesElement.innerHTML = `
+          <div class="city">
+            <div>
+              <h2>${cityName}</h2>
+              <div class="date"></div>
+            </div>
+            <div class="time"></div>
+          </div>
+        `;
+
+        // Start updating time for the selected city
+        updateInterval = setInterval(() => {
+          let cityTime = moment().tz(cityTimeZone);
+          citiesElement.querySelector(".date").innerHTML = cityTime.format("MMMM Do YYYY");
+          citiesElement.querySelector(".time").innerHTML = cityTime.format("h:mm:ss [<small>]A[</small>]");
+        }, 1000);
+
+        
+        document.getElementById("backLink").style.display = "inline-block";
+      }
+
+      document.querySelector("#city").addEventListener("change", updateCity);
+      document.getElementById("backLink").addEventListener("click", () => {
+        document.getElementById("city").selectedIndex = 0; 
+        document.getElementById("cities").innerHTML = `
+          <div class="city" id="mozambique">
+            <div>
+              <h2>Mozambique</h2>
+              <div class="date"></div>
+            </div>
+            <div class="time"></div>
+          </div>
+          <div class="city" id="venice">
+            <div>
+              <h2>Venice</h2>
+              <div class="date"></div>
+            </div>
+            <div class="time"></div>
+          </div>
+        `;
+        updateTime();
+        clearInterval(updateInterval); 
+        updateTime(); 
+        document.getElementById("backLink").style.display = "none"; 
+      });
+
+      updateTime();
+      setInterval(updateTime, 1000);
+    </script>
+  </body>
+</html>
+
